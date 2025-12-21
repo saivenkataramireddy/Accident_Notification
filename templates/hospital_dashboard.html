@@ -1,0 +1,232 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hospital Dashboard | Emergency System</title>
+
+    <!-- Leaflet -->
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap"
+          rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "Inter", sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        header {
+            background: #0f172a;
+            color: #fff;
+            padding: 18px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            font-size: 20px;
+            font-weight: 500;
+        }
+
+        header a {
+            background: #ef4444;
+            padding: 8px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .container {
+            padding: 24px 32px;
+        }
+
+        /* ===== STATS ===== */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: #fff;
+            padding: 18px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        .card h3 {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 8px;
+        }
+
+        .card p {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        /* ===== MAP ===== */
+        #map {
+            height: 360px;
+            border-radius: 14px;
+            margin-bottom: 24px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+        }
+
+        /* ===== TABLE ===== */
+        table {
+            width: 100%;
+            background: #fff;
+            border-radius: 14px;
+            border-collapse: collapse;
+            overflow: hidden;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+        }
+
+        thead {
+            background: #1e293b;
+            color: #fff;
+        }
+
+        th, td {
+            padding: 14px;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        tr:not(:last-child) {
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .assigned {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .resolved {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .active {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>🏥 {{ hospital.hospital_name }} – Emergency Dashboard</h1>
+    <a href="{% url 'logout' %}">Logout</a>
+</header>
+
+<div class="container">
+
+    <!-- ===== STATS ===== -->
+    <div class="stats">
+        <div class="card">
+            <h3>Total Cases</h3>
+            <p>{{ assignments|length }}</p>
+        </div>
+
+        <div class="card">
+            <h3>Active Cases</h3>
+            <p>
+                {{ assignments|dictsort:"status"|length }}
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Resolved</h3>
+            <p>
+                {{ assignments|length }}
+            </p>
+        </div>
+    </div>
+
+    <!-- ===== MAP ===== -->
+    <div id="map"></div>
+
+    <!-- ===== CASE TABLE ===== -->
+    <table>
+        <thead>
+            <tr>
+                <th>Patient</th>
+                <th>Location</th>
+                <th>Status</th>
+                <th>Reported</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for a in assignments %}
+            <tr>
+                <td>{{ a.alert.user.username }}</td>
+                <td>{{ a.alert.address }}</td>
+                <td>
+                    {% if a.status == "resolved" %}
+                        <span class="badge resolved">Resolved</span>
+                    {% elif a.status == "assigned" %}
+                        <span class="badge assigned">Assigned</span>
+                    {% else %}
+                        <span class="badge active">Active</span>
+                    {% endif %}
+                </td>
+                <td>{{ a.alert.created_at }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="4" style="text-align:center;">No emergency cases assigned</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+<!-- ===== MAP SCRIPT ===== -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+const map = L.map("map").setView([{{ hospital.latitude }}, {{ hospital.longitude }}], 12);
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap"
+}).addTo(map);
+
+const redIcon = L.icon({
+    iconUrl: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+    iconSize: [32, 32]
+});
+
+{% for a in assignments %}
+L.marker([{{ a.alert.latitude }}, {{ a.alert.longitude }}], {
+    icon: redIcon
+}).addTo(map)
+  .bindPopup("🚑 {{ a.alert.address }}");
+{% endfor %}
+
+// Auto refresh every 10 sec
+setInterval(() => location.reload(), 10000);
+</script>
+
+</body>
+</html>

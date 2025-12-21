@@ -1,0 +1,43 @@
+body {
+    background: radial-gradient(circle, #ff2a2a, #300);
+    font-family: Arial;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: white;
+}
+
+.auth-box {
+    background: rgba(0,0,0,0.6);
+    padding: 30px;
+    border-radius: 10px;
+    width: 320px;
+    text-align: center;
+}
+
+.auth-box input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+.auth-box button {
+    width: 100%;
+    padding: 10px;
+    background: red;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+.auth-box a {
+    color: #ffdada;
+}
+
+.msg {
+    background: #ffb3b3;
+    color: black;
+    padding: 5px;
+    margin-bottom: 10px;
+}

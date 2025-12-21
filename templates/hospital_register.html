@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hospital Registration</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #065f46;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .form-box {
+            background: white;
+            width: 420px;
+            padding: 30px;
+            border-radius: 10px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 11px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #047857;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        .msg {
+            color: red;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-box">
+    <h2>🏥 Hospital Registration</h2>
+
+    {% for message in messages %}
+        <p class="msg">{{ message }}</p>
+    {% endfor %}
+
+    <form method="POST">
+        {% csrf_token %}
+        <input type="text" name="username" placeholder="Hospital Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+
+        <input type="text" name="hospital_name" placeholder="Hospital Name" required>
+        <input type="text" name="latitude" placeholder="Hospital Latitude" required>
+        <input type="text" name="longitude" placeholder="Hospital Longitude" required>
+        <input type="text" name="phone" placeholder="Contact Number" required>
+
+        <input type="password" name="secret_code"
+               placeholder="Hospital Authorization Code" required>
+
+        <button type="submit">Register Hospital</button>
+    </form>
+</div>
+
+</body>
+</html>

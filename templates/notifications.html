@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications</title>
+
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .clear-btn {
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .clear-btn:hover {
+            background: #e60000;
+        }
+
+        .notification {
+            background: #ffffff;
+            border-left: 6px solid #007bff;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+
+        .notification h4 {
+            margin: 0;
+            color: #007bff;
+        }
+
+        .notification p {
+            margin: 6px 0;
+            color: #444;
+        }
+
+        .map-link {
+            display: inline-block;
+            margin-top: 8px;
+            text-decoration: none;
+            color: #fff;
+            background: #28a745;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-size: 13px;
+        }
+
+        .map-link:hover {
+            background: #218838;
+        }
+
+        .empty {
+            text-align: center;
+            color: #777;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="header">
+            <h2>🔔 Notifications</h2>
+
+            {% if notifications %}
+            <form method="POST" action="{% url 'clear_notifications' %}">
+                {% csrf_token %}
+                <button class="clear-btn" type="submit">
+                    🧹 Clear All
+                </button>
+            </form>
+            {% endif %}
+        </div>
+
+        {% for note in notifications %}
+            <div class="notification">
+                <h4>{{ note.title }}</h4>
+                <p>{{ note.message }}</p>
+                <p><strong>Address:</strong> {{ note.address }}</p>
+
+                <a class="map-link" target="_blank"
+                   href="https://maps.google.com/?q={{ note.latitude }},{{ note.longitude }}">
+                    📍 View on Map
+                </a>
+            </div>
+        {% empty %}
+            <p class="empty">No notifications available 🚫</p>
+        {% endfor %}
+
+    </div>
+</body>
+</html>

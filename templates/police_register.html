@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Police Registration</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #0f172a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .form-box {
+            background: white;
+            width: 420px;
+            padding: 30px;
+            border-radius: 10px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 11px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #b91c1c;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        .msg {
+            color: red;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-box">
+    <h2>🚓 Police Registration</h2>
+
+    {% for message in messages %}
+        <p class="msg">{{ message }}</p>
+    {% endfor %}
+
+    <form method="POST">
+        {% csrf_token %}
+        <input type="text" name="username" placeholder="Police Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+
+        <input type="text" name="station_name" placeholder="Police Station Name" required>
+        <input type="text" name="latitude" placeholder="Station Latitude" required>
+        <input type="text" name="longitude" placeholder="Station Longitude" required>
+        <input type="text" name="phone" placeholder="Contact Number" required>
+
+        <input type="password" name="secret_code"
+               placeholder="Police Authorization Code" required>
+
+        <button type="submit">Register Police</button>
+    </form>
+</div>
+
+</body>
+</html>
