@@ -87,9 +87,13 @@ WSGI_APPLICATION = 'Accedent_alert.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+  'default': {
+        'ENGINE': 'django.db.backends.mysql', 
+        'NAME': env('DB_NAME'), 
+        'USER': env('DB_USER'),
+        'PASSWORD':env('DB_PASSWORD'),
+        'HOST': env('DB_HOST'),   # Or an IP Address that your DB is hosted on
+        'PORT':env('DB_PORT'),
     }
 }
 
