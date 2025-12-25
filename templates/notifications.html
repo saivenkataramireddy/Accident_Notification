@@ -1,121 +1,223 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notifications</title>
+<meta charset="UTF-8">
+<title>Notifications</title>
 
-    <style>
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f4f6f9;
-            margin: 0;
-            padding: 20px;
-        }
+<style>
+/* ================= GLOBAL ================= */
+body {
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    background: #f3f4f6;
+    margin: 0;
+    padding: 0;
+}
 
-        .container {
-            max-width: 900px;
-            margin: auto;
-        }
+.container {
+    max-width: 850px;
+    margin: 40px auto;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
 
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
+/* ================= HEADER ================= */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 22px;
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    color: white;
+}
 
-        h2 {
-            color: #333;
-        }
+.header h2 {
+    margin: 0;
+    font-size: 22px;
+}
 
-        .clear-btn {
-            background: #ff4d4d;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
+.clear-btn {
+    background: white;
+    color: #b91c1c;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
 
-        .clear-btn:hover {
-            background: #e60000;
-        }
+.clear-btn:hover {
+    background: #fee2e2;
+}
 
-        .notification {
-            background: #ffffff;
-            border-left: 6px solid #007bff;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-        }
+/* ================= NOTIFICATION CARD ================= */
+.notification {
+    padding: 18px 22px;
+    border-bottom: 1px solid #e5e7eb;
+    border-left: 6px solid #cbd5e1;
+    background: #ffffff;
+    transition: transform 0.3s ease;
+}
 
-        .notification h4 {
-            margin: 0;
-            color: #007bff;
-        }
+.notification:hover {
+    transform: scale(1.01);
+}
 
-        .notification p {
-            margin: 6px 0;
-            color: #444;
-        }
+.notification h4 {
+    margin: 0 0 6px;
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+}
 
-        .map-link {
-            display: inline-block;
-            margin-top: 8px;
-            text-decoration: none;
-            color: #fff;
-            background: #28a745;
-            padding: 6px 12px;
-            border-radius: 5px;
-            font-size: 13px;
-        }
+.notification p {
+    margin: 4px 0;
+    color: #374151;
+}
 
-        .map-link:hover {
-            background: #218838;
-        }
+.map-link {
+    display: inline-block;
+    margin-top: 8px;
+    text-decoration: none;
+    color: #2563eb;
+    font-weight: 600;
+}
 
-        .empty {
-            text-align: center;
-            color: #777;
-            margin-top: 50px;
-        }
-    </style>
+/* ================= UNREAD ================= */
+.unread-dot {
+    width: 10px;
+    height: 10px;
+    background: #ef4444;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+/* ================= NEW ALERT ANIMATION ================= */
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 0 rgba(239,68,68,0); }
+    50% { box-shadow: 0 0 18px rgba(239,68,68,0.5); }
+    100% { box-shadow: 0 0 0 rgba(239,68,68,0); }
+}
+
+.notification.new {
+    animation: pulseGlow 1.5s ease-in-out 2;
+    background: #fff5f5;
+    border-left-color: #ef4444;
+}
+
+/* ================= EMPTY ================= */
+.empty {
+    padding: 40px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 16px;
+}
+</style>
 </head>
 
 <body>
-    <div class="container">
 
-        <div class="header">
-            <h2>🔔 Notifications</h2>
+<div class="container">
 
-            {% if notifications %}
-            <form method="POST" action="{% url 'clear_notifications' %}">
-                {% csrf_token %}
-                <button class="clear-btn" type="submit">
-                    🧹 Clear All
-                </button>
-            </form>
-            {% endif %}
-        </div>
+    <div class="header">
+        <h2>🔔 Notifications</h2>
 
-        {% for note in notifications %}
-            <div class="notification">
-                <h4>{{ note.title }}</h4>
-                <p>{{ note.message }}</p>
-                <p><strong>Address:</strong> {{ note.address }}</p>
-
-                <a class="map-link" target="_blank"
-                   href="https://maps.google.com/?q={{ note.latitude }},{{ note.longitude }}">
-                    📍 View on Map
-                </a>
-            </div>
-        {% empty %}
-            <p class="empty">No notifications available 🚫</p>
-        {% endfor %}
-
+        {% if notifications %}
+        <form method="POST" action="{% url 'clear_notifications' %}">
+            {% csrf_token %}
+            <button class="clear-btn">🧹 Clear All</button>
+        </form>
+        {% endif %}
     </div>
+
+    {% for note in notifications %}
+    <div class="notification {% if not note.is_read %}new{% endif %}">
+        <h4>
+            {% if not note.is_read %}
+                <span class="unread-dot"></span>
+            {% endif %}
+            {{ note.title }}
+        </h4>
+
+        <p>{{ note.message }}</p>
+        <p><strong>Address:</strong> {{ note.address }}</p>
+        {% if note.public_alert and note.public_alert.photo %}
+        <img src="{{ note.public_alert.photo.url }}"
+            alt="Missing Person"
+            style="
+                width: 160px;
+                margin-top: 10px;
+                border-radius: 8px;
+                border: 2px solid #ef4444;
+            ">
+        {% endif %}
+
+
+        <a class="map-link" target="_blank"
+           href="https://maps.google.com/?q={{ note.latitude }},{{ note.longitude }}">
+            📍 View on Map
+        </a>
+    </div>
+    {% empty %}
+    <p class="empty">No notifications available 🚫</p>
+    {% endfor %}
+
+</div>
+
+<!-- ================= SOUND + REALTIME CHECK ================= -->
+<script>
+let lastUnreadCount = {{ notifications|length }};
+
+// 🔊 Emergency sound
+const alertSound = new Audio("{% static 'sounds/emergency.mp3' %}");
+alertSound.volume = 1.0;
+
+// 🔔 Browser notification
+function showBrowserNotification(title, message) {
+    if (Notification.permission === "granted") {
+        new Notification(title, {
+            body: message,
+            icon: "{% static 'images/alert.png' %}"
+        });
+    }
+}
+
+// 🔁 Poll unread count every 5 seconds
+setInterval(() => {
+    fetch("{% url 'unread_notifications_count' %}")
+        .then(res => res.json())
+        .then(data => {
+            if (data.count > lastUnreadCount) {
+
+                // 🔊 Play sound
+                alertSound.play().catch(()=>{});
+
+                // 📳 Mobile vibration
+                if (navigator.vibrate) {
+                    navigator.vibrate([300, 200, 300, 200, 600]);
+                }
+
+                // 🔔 Browser popup
+                showBrowserNotification(
+                    "🚨 New Emergency Alert",
+                    "A new emergency notification has arrived"
+                );
+
+                // 🔄 Reload to show animation
+                setTimeout(() => location.reload(), 700);
+            }
+
+            lastUnreadCount = data.count;
+        });
+}, 5000);
+
+// 🔐 Request permission once
+if ("Notification" in window && Notification.permission !== "granted") {
+    Notification.requestPermission();
+}
+</script>
+
 </body>
 </html>

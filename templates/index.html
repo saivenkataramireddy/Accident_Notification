@@ -61,36 +61,29 @@
 
 </div>
 
-<!-- ================= ALERT FORM MODAL ================= -->
-<div class="modal" id="alertModal">
+<!-- ================= WHO IS AFFECTED MODAL ================= -->
+<div class="modal" id="whoModal">
     <div class="modal-content">
-        <span class="close" onclick="closeAlertForm()">×</span>
+        <h2>🚨 Who is affected?</h2>
 
-        <h2>🚨 Emergency Details</h2>
+        <p style="margin:10px 0">
+            If no response in <b><span id="countdown">10</span></b> seconds,
+            the system will send a <b>SELF emergency alert</b>.
+        </p>
 
-        <form id="alertForm" enctype="multipart/form-data">
-            <label>Type of Emergency</label>
-            <select required>
-                <option value="">Select</option>
-                <option>Accident</option>
-                <option>Fire</option>
-                <option>Medical</option>
-                <option>Crime</option>
-                <option>Other</option>
-            </select>
-
-            <label>Description</label>
-            <textarea placeholder="Describe the situation..." ></textarea>
-
-            <label>Upload Images / Videos</label>
-            <input type="file" accept="image/*,video/*" multiple>
-
-            <button type="submit" class="submit-btn">
-                🚨 Submit Alert
+        <div style="display:flex; gap:15px; margin-top:20px;">
+            <button class="submit-btn" onclick="chooseSelf()">
+                🙋 Me
             </button>
-        </form>
+
+            <button class="submit-btn" style="background:#dc2626 "
+                    onclick="chooseOther()">
+                👤 Other Person
+            </button>
+        </div>
     </div>
 </div>
+
 <script>
     window.VAPID_PUBLIC_KEY = "{{ VAPID_PUBLIC_KEY }}";
 </script>

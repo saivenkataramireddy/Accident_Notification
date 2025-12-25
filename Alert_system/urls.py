@@ -5,6 +5,7 @@ urlpatterns = [
 
     # 🔐 AUTH
     path("", views.home, name="home"),
+    path("user/", views.user, name="user"),
     path("login/", views.login_view, name="login"),
     path("register/", views.register_view, name="register"),
     path("logout/", views.logout_view, name="logout"),
@@ -23,8 +24,9 @@ urlpatterns = [
 
     # 🔔 NOTIFICATIONS
     path("notifications/", views.notifications, name="notifications"),
-    path("notifications/count/", views.unread_notifications_count, name="notif_count"),
+    path("notifications/unread-count/", views.unread_notifications_count, name="unread_notifications_count"),
     path("notifications/clear/", views.clear_notifications, name="clear_notifications"),
+    path("api/notifications/", views.notifications_api, name="notifications_api"),
 
     # 📍 LOCATION & MAP
     path("update-location/", views.update_location, name="update_location"),
@@ -32,7 +34,15 @@ urlpatterns = [
     path("map/", views.map_view, name="map"),
     path("reverse-geocode/", views.reverse_geocode, name="reverse_geocode"),
     path("nearby-services/", views.nearby_emergency_services, name="nearby_services"),
+
+    # 🚔 POLICE ACTIONS
     path("police/broadcast/<int:assignment_id>/", views.police_broadcast, name="police_broadcast"),
     path("police/resolve/<int:assignment_id>/", views.resolve_alert, name="resolve_alert"),
+    path("police/broadcast/general/", views.police_general_broadcast,  name="police_general_broadcast"),
+    path(
+    "police/missing-person/",
+    views.police_missing_person_broadcast,
+    name="police_missing_person_broadcast"
+),
 
 ]

@@ -1,0 +1,228 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Emergency Accident Alert System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f172a, #1e3a8a);
+            color: white;
+        }
+
+        /* ================= NAVBAR ================= */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 50px;
+            background: rgba(0,0,0,0.3);
+        }
+
+        nav h1 {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 15px;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        /* ================= HERO SECTION ================= */
+        .hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 80px 50px;
+            flex-wrap: wrap;
+        }
+
+        .hero-text {
+            max-width: 520px;
+        }
+
+        .hero-text h2 {
+            font-size: 38px;
+            margin-bottom: 15px;
+        }
+
+        .hero-text p {
+            font-size: 17px;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            color: #e5e7eb;
+        }
+
+        .hero-buttons button {
+            padding: 14px 24px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            margin-right: 15px;
+        }
+
+        .btn-primary {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #b91c1c;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #1e3a8a;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        /* ================= FEATURES ================= */
+        .features {
+            background: white;
+            color: #111827;
+            padding: 70px 50px;
+            text-align: center;
+        }
+
+        .features h2 {
+            font-size: 30px;
+            margin-bottom: 40px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+        }
+
+        .feature-card {
+            background: #f9fafb;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .feature-card h3 {
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            color: #374151;
+        }
+
+        /* ================= FOOTER ================= */
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 13px;
+            background: #020617;
+            color: #9ca3af;
+        }
+
+        /* ================= RESPONSIVE ================= */
+        @media(max-width: 768px) {
+            .hero {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .hero-buttons button {
+                margin-bottom: 10px;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ================= NAVBAR ================= -->
+<nav>
+    <h1>🚨 Emergency Alert System</h1>
+    <div>
+        <a href="{% url 'login' %}">Login</a>
+    </div>
+</nav>
+
+<!-- ================= HERO SECTION ================= -->
+<section class="hero">
+    <div class="hero-text">
+        <h2>Instant Help When Every Second Matters</h2>
+        <p>
+            A real-time emergency accident alert platform that instantly notifies
+            nearby hospitals, police stations, and citizens with live location data
+            to ensure faster response and save lives.
+        </p>
+
+        <div class="hero-buttons">
+            <button class="btn-primary" onclick="sendAlert()">🚑 Send Emergency Alert</button>
+            <button class="btn-secondary" onclick="window.location.href='{% url 'login' %}'">
+                🔐 Secure Login
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- ================= FEATURES ================= -->
+<section class="features">
+    <h2>Why This System?</h2>
+
+    <div class="feature-grid">
+        <div class="feature-card">
+            <h3>📍 Auto Location Detection</h3>
+            <p>Automatically captures latitude & longitude during emergencies.</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>🚓 Police Coordination</h3>
+            <p>Nearest police stations receive alerts instantly.</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>🏥 Hospital Case Locking</h3>
+            <p>Once a hospital accepts a case, others are locked automatically.</p>
+        </div>
+
+        <div class="feature-card">
+            <h3>🔔 Live Notifications</h3>
+            <p>Real-time alerts using WebSockets & Push Notifications.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+    © 2025 Emergency Accident Alert System | Built for Smart Cities
+</footer>
+
+<!-- ================= JAVASCRIPT ================= -->
+<script>
+    function sendAlert() {
+        alert("⚠️ Please login to send an emergency alert.");
+        window.location.href = "{% url 'login' %}";
+    }
+</script>
+
+</body>
+</html>

@@ -167,3 +167,6 @@ body {
         display: block;
     }
 }
+#whoModal .modal-content {
+    text-align: center;
+}

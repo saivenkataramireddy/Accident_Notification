@@ -1,8 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-
-# ================= USER PROFILE =================
 class UserProfile(models.Model):
     ROLE_CHOICES = [
         ("user", "User"),
@@ -17,15 +15,12 @@ class UserProfile(models.Model):
         return f"{self.user.username} ({self.role})"
 
 
-# ================= LIVE LOCATION =================
 class UserLocation(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    latitude = models.FloatField()
-    longitude = models.FloatField()
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-
-# ================= ALERT (CITIZEN REPORT) =================
 class Alert(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     latitude = models.FloatField()
@@ -38,23 +33,27 @@ class Alert(models.Model):
         return f"Alert #{self.id} - {self.address}"
 
 
-# ================= NOTIFICATION =================
 class Notification(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="notifications"
-    )
-    title = models.CharField(max_length=100)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
+    title = models.CharField(max_length=255)
     message = models.TextField()
-    latitude = models.FloatField()
-    longitude = models.FloatField()
-    address = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    address = models.TextField(blank=True)
+
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+
+    
+    public_alert = models.ForeignKey(
+        "PolicePublicAlert",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE
+    )
+
     is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
-# ================= POLICE =================
 class PoliceStation(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     station_name = models.CharField(max_length=200)
@@ -66,7 +65,6 @@ class PoliceStation(models.Model):
         return self.station_name
 
 
-# ================= HOSPITAL =================
 class Hospital(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     hospital_name = models.CharField(max_length=200)
@@ -77,8 +75,6 @@ class Hospital(models.Model):
     def __str__(self):
         return self.hospital_name
 
-
-# ================= ALERT ASSIGNMENT (MAIN STATUS HOLDER) =================
 class AlertAssignment(models.Model):
     STATUS_CHOICES = [
         ("assigned", "Assigned"),
@@ -102,3 +98,15 @@ class AlertAssignment(models.Model):
 
     def __str__(self):
         return f"Assignment #{self.id} - {self.status}"
+
+class PolicePublicAlert(models.Model):
+    police = models.ForeignKey(PoliceStation, on_delete=models.CASCADE)
+    message = models.TextField()
+    address = models.TextField()
+    photo = models.ImageField(upload_to="missing_persons/", null=True, blank=True)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Police Alert - {self.address}"

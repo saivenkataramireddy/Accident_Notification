@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST
 from django.db import transaction, OperationalError
 import requests, json, time
 from django.conf import settings
+from django.db.models import Q
 
 
 from .models import (
@@ -17,18 +18,23 @@ from .models import (
     UserProfile,
     PoliceStation,
     Hospital,
-    AlertAssignment
+    AlertAssignment,
+    PolicePublicAlert
 )
 from .utils import calculate_distance
 
+def home(request):
+    return render(request,"landing.html")
 
 @login_required
-def home(request):
+def user(request):
     unread_count = request.user.notifications.filter(is_read=False).count()
     return render(request, "index.html", {
         "unread_count": unread_count
     })
 
+
+from django.utils.timezone import now
 
 def login_view(request):
     if request.method == "POST":
@@ -40,16 +46,25 @@ def login_view(request):
         if user:
             login(request, user)
 
-            profile, _ = UserProfile.objects.get_or_create(
+            UserProfile.objects.get_or_create(
                 user=user, defaults={"role": "user"}
             )
 
-            if profile.role == "police":
+            # ✅ CREATE USER LOCATION IF MISSING (NO 0,0 SKIP ISSUE)
+            UserLocation.objects.get_or_create(
+                user=user,
+                defaults={
+                    "latitude": None,
+                    "longitude": None
+                }
+            )
+
+            if user.userprofile.role == "police":
                 return redirect("police_dashboard")
-            elif profile.role == "hospital":
+            elif user.userprofile.role == "hospital":
                 return redirect("hospital_dashboard")
             else:
-                return redirect("home")
+                return redirect("user")
 
         messages.error(request, "Invalid username or password")
 
@@ -86,7 +101,7 @@ def register_view(request):
 
 def logout_view(request):
     logout(request)
-    return redirect("login")
+    return redirect("home")
 
 
 
@@ -102,7 +117,7 @@ def send_alert(request):
         address = request.POST.get("address", "")
         description = request.POST.get("description", "")
 
-        # ✅ 1. Create Alert (NO status field here)
+        # 1️⃣ Create alert
         alert = Alert.objects.create(
             user=request.user,
             latitude=lat,
@@ -111,26 +126,63 @@ def send_alert(request):
             description=description
         )
 
-        # ✅ 2. Assign police (hospital optional)
+        # 2️⃣ Assign nearest police & hospital
         police, hospital = get_nearest_police_and_hospital(lat, lon)
 
-        assignment = AlertAssignment.objects.create(
+        AlertAssignment.objects.create(
             alert=alert,
             police=police,
             hospital=hospital,
             status="assigned"
         )
 
-        # ✅ 3. Notify police
+        # 3️⃣ Notify police
         Notification.objects.create(
             user=police.user,
-            title="🚨 New Emergency Case",
-            message=address,
+            title="🚨 New Emergency Alert",
+            message=description or "Emergency reported nearby",
             latitude=lat,
             longitude=lon,
             address=address
         )
 
+        # 4️⃣ Notify hospital
+        Notification.objects.create(
+            user=hospital.user,
+            title="🏥 Emergency Case Nearby",
+            message="Medical assistance required",
+            latitude=lat,
+            longitude=lon,
+            address=address
+        )
+
+        nearby_users = UserLocation.objects.exclude(user=request.user)
+        print("===== NEARBY USER DEBUG =====")
+        print("Total nearby user locations:", nearby_users.count())
+
+        for loc in nearby_users:
+            print("User:", loc.user.username)
+            print("Lat/Lon:", loc.latitude, loc.longitude)
+
+            # ✅ CRITICAL FIX
+            if loc.latitude is None or loc.longitude is None:
+                continue
+
+            distance = calculate_distance(
+                lat, lon, loc.latitude, loc.longitude
+            )
+
+            if distance <= 5:
+                Notification.objects.create(
+                    user=loc.user,
+                    title="🚨 Emergency Nearby",
+                    message="An emergency occurred within 5 km of your location",
+                    latitude=lat,
+                    longitude=lon,
+                    address=address
+                )
+
+        # 6️⃣ Return response
         return JsonResponse({"status": "success"})
 
     except Exception as e:
@@ -167,10 +219,29 @@ def reverse_geocode(request):
 
 @login_required
 def notifications(request):
-    notifications = request.user.notifications.order_by("-created_at")
+    notes = request.user.notifications.order_by("-created_at")
+    request.user.notifications.filter(is_read=False).update(is_read=True)
     return render(request, "notifications.html", {
-        "notifications": notifications
+        "notifications": notes
     })
+@login_required
+def notifications_api(request):
+    notes = request.user.notifications.order_by("-created_at")[:50]
+
+    data = []
+    for n in notes:
+        data.append({
+            "id": n.id,
+            "title": n.title,
+            "message": n.message,
+            "address": n.address,
+            "lat": n.latitude,
+            "lon": n.longitude,
+            "is_read": n.is_read,
+            "created_at": n.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        })
+
+    return JsonResponse({"notifications": data})
 
 
 @login_required
@@ -332,16 +403,16 @@ def nearby_emergency_services(request):
 
 @login_required
 def police_dashboard(request):
-    profile = request.user.userprofile
-
-    if profile.role != "police":
+    if request.user.userprofile.role != "police":
         return redirect("home")
 
     police = PoliceStation.objects.get(user=request.user)
 
     alerts = AlertAssignment.objects.select_related(
         "alert", "alert__user"
-    ).filter(police=police).order_by("-created_at")
+    ).filter(
+        Q(police=police) | Q(police__isnull=True)
+    ).order_by("-created_at")
 
     return render(request, "police_dashboard.html", {
         "alerts": alerts
@@ -446,8 +517,6 @@ def hospital_register(request):
 
     if request.method == "POST":
         secret = request.POST.get("secret_code")
-
-        # 🔐 ADD THIS HERE
         if secret != settings.HOSPITAL_SECRET_CODE:
             messages.error(request, "Invalid authorization code")
             return render(request, "hospital_register.html")
@@ -511,3 +580,90 @@ def police_register(request):
         return redirect("login")
 
     return render(request, "police_register.html")
+
+
+@login_required
+def police_general_broadcast(request):
+    if request.user.userprofile.role != "police":
+        return redirect("home")
+
+    if request.method != "POST":
+        return redirect("police_dashboard")
+
+    message = request.POST.get("message")
+
+    police = PoliceStation.objects.get(user=request.user)
+    lat = police.latitude
+    lon = police.longitude
+
+    nearby_users = UserLocation.objects.exclude(user=request.user)
+
+    sent = 0
+    for loc in nearby_users:
+        if loc.latitude is None or loc.longitude is None:
+            continue
+
+        if calculate_distance(lat, lon, loc.latitude, loc.longitude) <= 5:
+            Notification.objects.create(
+                user=loc.user,
+                title="🚔 Police Public Alert",
+                message=message,
+                latitude=lat,
+                longitude=lon,
+                address=f"Near {police.station_name}"
+                
+            )
+            sent += 1
+
+    messages.success(
+        request,
+        f"Broadcast sent to {sent} users within 5 km"
+    )
+
+    return redirect("police_dashboard")
+
+@login_required
+def police_missing_person_broadcast(request):
+    if request.user.userprofile.role != "police":
+        return redirect("home")
+
+    if request.method != "POST":
+        return redirect("police_dashboard")
+
+    message = request.POST.get("message")
+    address = request.POST.get("address")
+    photo = request.FILES.get("photo")
+
+    police = PoliceStation.objects.get(user=request.user)
+    lat, lon = police.latitude, police.longitude
+
+    # Save alert
+    alert = PolicePublicAlert.objects.create(
+        police=police,
+        message=message,
+        address=address,
+        photo=photo,
+        latitude=lat,
+        longitude=lon
+    )
+
+    # Notify users within 5 KM
+    nearby_users = UserLocation.objects.exclude(user=request.user)
+
+    for loc in nearby_users:
+        if loc.latitude is None or loc.longitude is None:
+            continue
+
+        if calculate_distance(lat, lon, loc.latitude, loc.longitude) <= 5:
+            Notification.objects.create(
+                user=loc.user,
+                title="🚔 Missing Person Alert",
+                message=message,
+                latitude=lat,
+                longitude=lon,
+                address=address,
+                public_alert=alert
+            )
+
+    messages.success(request, "🚨 Missing person alert sent successfully")
+    return redirect("police_dashboard")
